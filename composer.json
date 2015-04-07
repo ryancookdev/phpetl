@@ -1,0 +1,20 @@
+{
+    "name": "vendor/phpetl",
+    "description": "Description of project phpetl.",
+    "authors": [
+        {
+            "name": "Ryan Cook",
+            "email": "ryan@ryancook.software"
+        }
+    ],
+    "require": {
+        "ext-xdebug": "* 2.2.3",
+        "phpunit/phpunit": "dev-master",
+        "phpunit/phpunit-skeleton-generator": "dev-master"
+    },
+    "autoload": {
+        "psr-4": {
+            "PhpEtl\\": "src/"
+        }
+    }
+}

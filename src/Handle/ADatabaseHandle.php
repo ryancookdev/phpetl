@@ -5,47 +5,47 @@ namespace PhpEtl\Handle;
 abstract class ADatabaseHandle implements IHandle
 {
 
-    protected $pdo_handle;
-    protected $table_header;
-    protected $table_name;
-    protected $update_fields;
-    protected $current_internal_row_id;
-    protected $max_insert = 500;
+    protected $pdoHandle;
+    protected $tableHeader;
+    protected $tableName;
+    protected $updateFields;
+    protected $currentRowId;
+    protected $maxInsert = 500;
 
-    public function __construct(array $conn, array $data)
+    public function __construct(array $connection, array $data)
     {
 	$host = NULL;
 	$user = NULL;
 	$password = NULL;
 	$database = NULL;
 
-	if (key_exists('host', $conn)) {
-	    $host = $conn['host'];
+	if (key_exists('host', $connection)) {
+	    $host = $connection['host'];
 	}
-	if (key_exists('user', $conn)) {
-	    $user = $conn['user'];
+	if (key_exists('user', $connection)) {
+	    $user = $connection['user'];
 	}
-	if (key_exists('password', $conn)) {
-	    $password = $conn['password'];
+	if (key_exists('password', $connection)) {
+	    $password = $connection['password'];
 	}
-	if (key_exists('database', $conn)) {
-	    $database = $conn['database'];
+	if (key_exists('database', $connection)) {
+	    $database = $connection['database'];
 	}
 	if (key_exists('table', $data)) {
-	    $this->table_name = $data['table'];
+	    $this->tableName = $data['table'];
 	}
 	if (key_exists('fields', $data)) {
-	    $this->table_header = $data['fields'];
+	    $this->tableHeader = $data['fields'];
 	}
 	if (key_exists('update_fields', $data)) {
-	    $this->update_fields = $data['update_fields'];
+	    $this->updateFields = $data['update_fields'];
 	}
 
 	$dsn = $this->getDsn($host, $database);
 
 	try {
-	    $this->pdo_handle = new \PDO($dsn, $user, $password);
-	    $this->pdo_handle->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+	    $this->pdoHandle = new \PDO($dsn, $user, $password);
+	    $this->pdoHandle->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 	} catch (PDOException $e) {
 	    print_r($e->getMessage());
 	}
@@ -56,10 +56,10 @@ abstract class ADatabaseHandle implements IHandle
 	$rows = [];
 	$i = 0;
 
-	$sql = ($sql === NULL ? 'SELECT ' . $this->table_header . ' FROM ' . $this->table_name : $sql);
+	$sql = ($sql === NULL ? 'SELECT ' . $this->tableHeader . ' FROM ' . $this->tableName : $sql);
 
 	try {
-	    $stmt = $this->pdo_handle->prepare($sql);
+	    $stmt = $this->pdoHandle->prepare($sql);
 	    $stmt->execute();
 
 	    $destination->beginTransaction();
@@ -85,14 +85,14 @@ abstract class ADatabaseHandle implements IHandle
 
     public function load(array $rows)
     {
-	$field_count = count(explode(',', $this->table_header));
-	$placeholder = implode(',', array_fill(0, $field_count, '?'));
+	$fieldCount = count(explode(',', $this->tableHeader));
+	$placeholder = implode(',', array_fill(0, $fieldCount, '?'));
 	// Prepared statements do not handle variable table/field names, so
 	// part of the statement must be built with string concatenation.
-	$sql = 'INSERT INTO ' . $this->table_name . ' (' . $this->table_header . ') VALUES (' . $placeholder . ');';
+	$sql = 'INSERT INTO ' . $this->tableName . ' (' . $this->tableHeader . ') VALUES (' . $placeholder . ');';
 
 	try {
-	    $stmt = $this->pdo_handle->prepare($sql);
+	    $stmt = $this->pdoHandle->prepare($sql);
 	    foreach ($rows as $row) {
 		$stmt->execute($row);
 	    }
@@ -104,7 +104,7 @@ abstract class ADatabaseHandle implements IHandle
     public function __destruct()
     {
 	$this->close();
-	$this->pdo_handle = NULL;
+	$this->pdoHandle = NULL;
     }
 
     abstract public function getDsn($host, $database);

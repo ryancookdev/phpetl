@@ -3,3 +3,5 @@
 /composer.lock
 /vendor/
 /examples/csv2csv.php
+/examples/ryantest.php
+/test/nbproject/private/

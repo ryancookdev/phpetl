@@ -5,37 +5,31 @@ namespace PhpEtl;
 class Table implements \Iterator
 {
 
-    // The current position during iteration
-    protected $position = 0;
     protected $stage;
-
-    // The data for the current position during iteration
-    //protected $current_row = array();
+    protected $iteratorCurrentPosition = 0;
 
     public function __construct(array $data)
     {
-	$this->position = 0;
 	$this->stage = Handle\HandleFactory::createHandle();
 	$this->stage->createTable($data['table'], $data['fields']);
     }
 
-    // Proxy to IHandle methods
     // Move data to the stage
-    public function extract(array $source_conn, array $source_data)
+    public function extract(array $sourceConnection, array $sourceData)
     {
-	$source = Handle\HandleFactory::createHandle($source_conn, $source_data);
+	$source = Handle\HandleFactory::createHandle($sourceConnection, $sourceData);
 
-	if (key_exists('sql', $source_data)) {
-	    $source->extract($this->stage, $source_data['sql']);
+	if (key_exists('sql', $sourceData)) {
+	    $source->extract($this->stage, $sourceData['sql']);
 	} else {
 	    $source->extract($this->stage);
 	}
     }
 
     // Move data from the stage
-    public function load(array $dest_conn, array $dest_data)
+    public function load(array $destinationConnection, array $destinationData)
     {
-	$destination = Handle\HandleFactory::createHandle($dest_conn, $dest_data);
+	$destination = Handle\HandleFactory::createHandle($destinationConnection, $destinationData);
 	$this->stage->extract($destination);
     }
 
@@ -65,7 +59,7 @@ class Table implements \Iterator
 
     function rewind()
     {
-	$this->position = 0;
+	$this->$iteratorCurrentPosition = 0;
     }
 
     function current()
@@ -75,12 +69,12 @@ class Table implements \Iterator
 
     function key()
     {
-	return $this->position;
+	return $this->$iteratorCurrentPosition;
     }
 
     function next()
     {
-	++$this->position;
+	++$this->$iteratorCurrentPosition;
     }
 
     function valid()

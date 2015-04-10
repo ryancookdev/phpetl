@@ -21,4 +21,14 @@ class MockHandle implements IHandle
 
     }
 
+    public function beginTransaction()
+    {
+
+    }
+
+    public function commit()
+    {
+
+    }
+
 }

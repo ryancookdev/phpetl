@@ -17,12 +17,12 @@ class SqliteHandle extends \PhpEtl\Handle\ADatabaseHandle
 
     public function beginTransaction()
     {
-	$this->pdo_handle->beginTransaction();
+	$this->pdoHandle->beginTransaction();
     }
 
     public function commit()
     {
-	$this->pdo_handle->commit();
+	$this->pdoHandle->commit();
     }
 
     public function close()

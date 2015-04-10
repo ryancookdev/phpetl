@@ -10,7 +10,7 @@ namespace PhpEtl\Handle;
 interface IHandle
 {
 
-    public function extract(IHandle $dest_conn, $sql);
+    public function extract(IHandle $destinationConnection, $sql);
 
     public function load(array $rows);
 

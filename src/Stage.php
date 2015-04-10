@@ -10,24 +10,24 @@ namespace PhpEtl;
 class Stage extends Handle\Database\SqliteHandle implements IStage
 {
 
-    protected $table_name;
-    protected $table_header;
+    protected $tableName;
+    protected $tableHeader;
 
     public function createTable($name, $header)
     {
-	$this->table_name = $name;
-	$this->table_header = $header;
+	$this->tableName = $name;
+	$this->tableHeader = $header;
 
-	$header_type = explode(',', $header);
-	array_walk($header_type, function (&$field, $key) {
+	$headerType = explode(',', $header);
+	array_walk($headerType, function (&$field, $key) {
 	    $field = $field . ' text';
 	});
 
-	$header_type_str = implode(',', $header_type);
+	$header_type_str = implode(',', $headerType);
 
 	try {
-	    $this->pdo_handle->exec("DROP TABLE IF EXISTS {$this->table_name};");
-	    $this->pdo_handle->exec("CREATE TABLE {$this->table_name} ('internal_row_id' integer primary key, $header_type_str);");
+	    $this->pdoHandle->exec("DROP TABLE IF EXISTS {$this->tableName};");
+	    $this->pdoHandle->exec("CREATE TABLE {$this->tableName} ('internal_row_id' integer primary key, $header_type_str);");
 	} catch (PDOException $e) {
 	    print_r($e->getMessage());
 	}

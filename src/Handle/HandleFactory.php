@@ -10,12 +10,12 @@ namespace PhpEtl\Handle;
 class HandleFactory
 {
 
-    public static function createHandle(array $connection = NULL, array $data = NULL)
+    public static function createHandle(array $config = NULL)
     {
-	if (is_array($connection)) {
-	    if (key_exists('type', $connection)) {
-		$type = '\\PhpEtl\\Handle\\Database\\' . $connection['type'] . 'Handle';
-		return new $type($connection, $data);
+	if (is_array($config)) {
+	    if (key_exists('type', $config)) {
+		$type = '\\PhpEtl\\Handle\\Database\\' . $config['type'] . 'Handle';
+		return new $type($config);
 	    }
 	}
 

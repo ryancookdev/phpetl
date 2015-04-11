@@ -9,36 +9,28 @@ abstract class ADatabaseHandle implements IHandle
     protected $tableHeader;
     protected $tableName;
     protected $updateFields;
+    protected $sql;
     protected $currentRowId;
     protected $maxInsert = 500;
 
-    public function __construct(array $connection, array $data)
+    public function __construct(array $config)
     {
-	$host = NULL;
-	$user = NULL;
-	$password = NULL;
-	$database = NULL;
+	$host = (key_exists('host', $config) ? $config['host'] : NULL);
+	$user = (key_exists('user', $config) ? $config['user'] : NULL);
+	$password = (key_exists('password', $config) ? $config['password'] : NULL);
+	$database = (key_exists('database', $config) ? $config['database'] : NULL);
 
-	if (key_exists('host', $connection)) {
-	    $host = $connection['host'];
+	if (key_exists('table', $config)) {
+	    $this->tableName = $config['table'];
 	}
-	if (key_exists('user', $connection)) {
-	    $user = $connection['user'];
+	if (key_exists('fields', $config)) {
+	    $this->tableHeader = $config['fields'];
 	}
-	if (key_exists('password', $connection)) {
-	    $password = $connection['password'];
+	if (key_exists('update_fields', $config)) {
+	    $this->updateFields = $config['update_fields'];
 	}
-	if (key_exists('database', $connection)) {
-	    $database = $connection['database'];
-	}
-	if (key_exists('table', $data)) {
-	    $this->tableName = $data['table'];
-	}
-	if (key_exists('fields', $data)) {
-	    $this->tableHeader = $data['fields'];
-	}
-	if (key_exists('update_fields', $data)) {
-	    $this->updateFields = $data['update_fields'];
+	if (key_exists('sql', $config)) {
+	    $this->sql = $config['sql'];
 	}
 
 	$dsn = $this->getDsn($host, $database);
@@ -46,17 +38,17 @@ abstract class ADatabaseHandle implements IHandle
 	try {
 	    $this->pdoHandle = new \PDO($dsn, $user, $password);
 	    $this->pdoHandle->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-	} catch (PDOException $e) {
+	} catch (\PDOException $e) {
 	    print_r($e->getMessage());
 	}
     }
 
-    public function extract(IHandle $destination, $sql = NULL)
+    public function extract(IHandle $destination)
     {
 	$rows = [];
 	$i = 0;
 
-	$sql = ($sql === NULL ? 'SELECT ' . $this->tableHeader . ' FROM ' . $this->tableName : $sql);
+	$sql = ($this->sql === NULL ? 'SELECT ' . $this->tableHeader . ' FROM ' . $this->tableName : $this->sql);
 
 	try {
 	    $stmt = $this->pdoHandle->prepare($sql);
@@ -64,7 +56,10 @@ abstract class ADatabaseHandle implements IHandle
 
 	    $destination->beginTransaction();
 
+	    $destination->define(($this->getTableStructureFromQuery($sql)));
+
 	    while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
+		// FIX... only relevant for Stage
 		unset($row['internal_row_id']);
 		$rows[] = array_values($row);
 		if (++$i >= 500) {
@@ -77,8 +72,8 @@ abstract class ADatabaseHandle implements IHandle
 		$destination->load($rows);
 	    }
 
-	    $destination->commit();
-	} catch (PDOException $e) {
+	    $destination->commitTransaction();
+	} catch (\PDOException $e) {
 	    print_r($e->getMessage());
 	}
     }
@@ -96,7 +91,35 @@ abstract class ADatabaseHandle implements IHandle
 	    foreach ($rows as $row) {
 		$stmt->execute($row);
 	    }
-	} catch (PDOException $e) {
+	} catch (\PDOException $e) {
+	    print_r($e->getMessage());
+	}
+    }
+
+    private function getTableStructureFromQuery($sql)
+    {
+	$this->createTempTableFromQuery($sql);
+	return $this->readTempTableStructure();
+    }
+
+    private function createTempTableFromQuery($sql)
+    {
+	try {
+	    $this->pdoHandle->exec('CREATE TEMPORARY TABLE temp AS (' . $sql . ') LIMIT 0; DESCRIBE temp;');
+	} catch (\PDOException $e) {
+	    print_r($e->getMessage());
+	}
+    }
+
+    private function readTempTableStructure()
+    {
+	try {
+	    $structure = [];
+	    foreach ($this->pdoHandle->query('DESCRIBE temp;') as $row) {
+		$structure[$row['Field']] = $row['Type'];
+	    }
+	    return $structure;
+	} catch (\PDOException $e) {
 	    print_r($e->getMessage());
 	}
     }
@@ -108,6 +131,10 @@ abstract class ADatabaseHandle implements IHandle
     }
 
     abstract public function getDsn($host, $database);
+
+    abstract public function translateTypes(array $structure);
+
+    abstract public function typeMap($type);
 
     abstract public function close();
 

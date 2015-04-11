@@ -13,24 +13,12 @@ class Stage extends Handle\Database\SqliteHandle implements IStage
     protected $tableName;
     protected $tableHeader;
 
-    public function createTable($name, $header)
+    public function define(array $structure)
     {
-	$this->tableName = $name;
-	$this->tableHeader = $header;
-
-	$headerType = explode(',', $header);
-	array_walk($headerType, function (&$field, $key) {
-	    $field = $field . ' text';
-	});
-
-	$header_type_str = implode(',', $headerType);
-
-	try {
-	    $this->pdoHandle->exec("DROP TABLE IF EXISTS {$this->tableName};");
-	    $this->pdoHandle->exec("CREATE TABLE {$this->tableName} ('internal_row_id' integer primary key, $header_type_str);");
-	} catch (PDOException $e) {
-	    print_r($e->getMessage());
-	}
+	$this->setTableHeader(array_keys($structure));
+	$translatedStructure = $this->translateTypes($structure);
+	$nameTypeStr = $this->structureToString($translatedStructure);
+	$this->createTable($nameTypeStr);
     }
 
     public function getRow()
@@ -58,14 +46,33 @@ class Stage extends Handle\Database\SqliteHandle implements IStage
 
     }
 
-    public function createInternalTable()
+    public function setTableName($name)
     {
-
+	$this->tableName = $name;
     }
 
-    public function insertInternalTable()
+    private function setTableHeader(array $header)
     {
+	$this->tableHeader = implode(',', $header);
+    }
 
+    private function structureToString(array $structure)
+    {
+	$nameType = [];
+	foreach ($structure as $name => $type) {
+	    $nameType[] = "$name $type";
+	}
+	return \implode(',', $nameType);
+    }
+
+    private function createTable($nameTypeStr)
+    {
+	try {
+	    $this->pdoHandle->exec("DROP TABLE IF EXISTS {$this->tableName};");
+	    $this->pdoHandle->exec("CREATE TABLE {$this->tableName} ('internal_row_id' integer primary key, $nameTypeStr);");
+	} catch (PDOException $e) {
+	    print_r($e->getMessage());
+	}
     }
 
 }

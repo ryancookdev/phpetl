@@ -10,12 +10,14 @@ namespace PhpEtl\Handle;
 interface IHandle
 {
 
-    public function extract(IHandle $destinationConnection, $sql);
+    public function extract(IHandle $destinationConnection);
 
     public function load(array $rows);
 
     public function beginTransaction();
 
-    public function commit();
+    public function commitTransaction();
+
+    public function define(array $structure);
 
 }

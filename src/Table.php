@@ -8,29 +8,24 @@ class Table implements \Iterator
     protected $stage;
     protected $iteratorCurrentPosition = 0;
 
-    public function __construct(array $data)
+    public function __construct($name)
     {
 	$this->stage = Handle\HandleFactory::createHandle();
-	$this->stage->createTable($data['table'], $data['fields']);
+	$this->stage->setTableName($name);
     }
 
     // Move data to the stage
-    public function extract(array $sourceConnection, array $sourceData)
+    public function extract(array $sourceConfig)
     {
-	$source = Handle\HandleFactory::createHandle($sourceConnection, $sourceData);
-
-	if (key_exists('sql', $sourceData)) {
-	    $source->extract($this->stage, $sourceData['sql']);
-	} else {
-	    $source->extract($this->stage);
-	}
+	$sourceHandle = Handle\HandleFactory::createHandle($sourceConfig);
+	$sourceHandle->extract($this->stage);
     }
 
     // Move data from the stage
-    public function load(array $destinationConnection, array $destinationData)
+    public function load(array $destinationConfig)
     {
-	$destination = Handle\HandleFactory::createHandle($destinationConnection, $destinationData);
-	$this->stage->extract($destination);
+	$destinationHandle = Handle\HandleFactory::createHandle($destinationConfig);
+	$this->stage->extract($destinationHandle);
     }
 
     // Proxy to IStage methods

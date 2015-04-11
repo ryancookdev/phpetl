@@ -20,7 +20,7 @@ class SqliteHandle extends \PhpEtl\Handle\ADatabaseHandle
 	$this->pdoHandle->beginTransaction();
     }
 
-    public function commit()
+    public function commitTransaction()
     {
 	$this->pdoHandle->commit();
     }
@@ -28,6 +28,24 @@ class SqliteHandle extends \PhpEtl\Handle\ADatabaseHandle
     public function close()
     {
 	\unlink(STAGE_PATH . '/local.db');
+    }
+
+    public function define(array $structure)
+    {
+	// Do nothing;
+    }
+
+    public function translateTypes(array $structure)
+    {
+	foreach ($structure as $name => &$type) {
+	    $type = $this->typeMap($type);
+	}
+	return $structure;
+    }
+
+    public function typeMap($type)
+    {
+	return 'text';
     }
 
 }

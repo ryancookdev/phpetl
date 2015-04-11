@@ -20,14 +20,29 @@ class MysqlHandle extends \PhpEtl\Handle\ADatabaseHandle
 	$this->pdoHandle->beginTransaction();
     }
 
-    public function commit()
+    public function commitTransaction()
     {
 	$this->pdoHandle->commit();
     }
 
     public function close()
     {
-	
+	// Do nothing
+    }
+
+    public function define(array $structure = NULL)
+    {
+	// Do nothing
+    }
+
+    public function translateTypes(array $structure)
+    {
+	// Do nothing
+    }
+
+    public function typeMap($type)
+    {
+	// Do nothing
     }
 
 }

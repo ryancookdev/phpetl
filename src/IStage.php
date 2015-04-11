@@ -10,7 +10,7 @@ namespace PhpEtl;
 interface IStage
 {
 
-    public function createTable($name, $header);
+    public function define(array $structure);
 
     public function getRow();
 
@@ -20,8 +20,8 @@ interface IStage
 
     public function setTable();
 
-    public function splitColumn();
+    public function setTableName($name);
 
-    public function insertInternalTable();
+    public function splitColumn();
 
 }

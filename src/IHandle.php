@@ -1,6 +1,6 @@
 <?php
 
-namespace PhpEtl\Handle;
+namespace PhpEtl;
 
 /**
  * Description of IHandle
@@ -10,7 +10,7 @@ namespace PhpEtl\Handle;
 interface IHandle
 {
 
-    public function extract(IHandle $destinationConnection);
+    public function send(IHandle $destinationConnection, array $table);
 
     public function load(array $rows);
 
@@ -18,6 +18,6 @@ interface IHandle
 
     public function commitTransaction();
 
-    public function define(array $structure);
+    public function defineTable($name, array $structure);
 
 }

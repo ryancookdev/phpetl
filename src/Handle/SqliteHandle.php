@@ -1,13 +1,13 @@
 <?php
 
-namespace PhpEtl\Handle\Database;
+namespace PhpEtl;
 
 /**
  * Description of SqliteHandle
  *
  * @author Ryan Cook <ryan@ryancook.software>
  */
-class SqliteHandle extends \PhpEtl\Handle\ADatabaseHandle
+class SqliteHandle extends ADatabaseHandle
 {
 
     public function getDsn($host, $database)
@@ -25,27 +25,25 @@ class SqliteHandle extends \PhpEtl\Handle\ADatabaseHandle
 	$this->pdoHandle->commit();
     }
 
-    public function close()
+    public function defineTable($name, array $structure)
     {
-	\unlink(STAGE_PATH . '/local.db');
-    }
 
-    public function define(array $structure)
-    {
-	// Do nothing;
     }
 
     public function translateTypes(array $structure)
     {
-	foreach ($structure as $name => &$type) {
-	    $type = $this->typeMap($type);
-	}
-	return $structure;
+
     }
 
     public function typeMap($type)
     {
-	return 'text';
+
+    }
+
+    protected function close()
+    {
+	parent::close();
+	\unlink(STAGE_PATH . '/local.db');
     }
 
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace PhpEtl\Handle\File;
+namespace PhpEtl;
 
 /**
  * Description of CsvHandle

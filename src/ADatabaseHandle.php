@@ -1,6 +1,7 @@
 <?php
 
-namespace PhpEtl;
+require_once 'IHandle.php';
+require_once 'View.php';
 
 abstract class ADatabaseHandle implements IHandle
 {
@@ -20,26 +21,26 @@ abstract class ADatabaseHandle implements IHandle
     private function createPDOHandle($dsn, $user, $password)
     {
 	try {
-	    return new \PDO($dsn, $user, $password);
-	} catch (\PDOException $e) {
+	    return new PDO($dsn, $user, $password);
+	} catch (PDOException $e) {
 	    print_r($e->getMessage());
 	}
     }
 
-    public function send(IHandle $destination, array $table)
+    public function send(IHandle $destination, View $view)
     {
 	$rows = [];
 	$i = 0;
 
 	try {
-	    $stmt = $this->pdoHandle->prepare($table['query']);
+	    $stmt = $this->pdoHandle->prepare($view->query);
 	    $stmt->execute();
 
-	    $destination->defineTable($table['name'], $this->getTableStructureFromQuery($table['query']));
+	    $destination->defineTable($view->name, $this->getTableStructureFromQuery($view->query));
 
 	    $destination->beginTransaction();
 
-	    while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
+	    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 		$rows[] = array_values($row);
 		if (++$i >= 500) {
 		    $i = 0;
@@ -53,7 +54,7 @@ abstract class ADatabaseHandle implements IHandle
 	    }
 
 	    $destination->commitTransaction();
-	} catch (\PDOException $e) {
+	} catch (PDOException $e) {
 	    print_r($e->getMessage());
 	}
 
@@ -62,38 +63,35 @@ abstract class ADatabaseHandle implements IHandle
 
     public function load(array $rows)
     {
-	$fieldCount = count(explode(',', $this->tableHeader));
-	$placeholder = implode(',', array_fill(0, $fieldCount, '?'));
-	// Prepared statements do not handle variable table/field names, so
-	// part of the statement must be built with string concatenation.
-	$query = 'INSERT INTO ' . $this->tableName . ' (' . $this->tableHeader . ') VALUES (' . $placeholder . ');';
-
 	try {
-	    $stmt = $this->pdoHandle->prepare($query);
+	    $stmt = $this->pdoHandle->prepare($this->getInsertStatement());
 	    foreach ($rows as $row) {
 		$stmt->execute($row);
 	    }
-	} catch (\PDOException $e) {
+	} catch (PDOException $e) {
 	    print_r($e->getMessage());
 	}
     }
 
     public function setPDOAttributes()
     {
-	$this->pdoHandle->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+	$this->pdoHandle->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     }
 
     private function getTableStructureFromQuery($query)
     {
 	$this->createTempTableFromQuery($query);
-	return $this->readTempTableStructure();
+	$structure = $this->readTempTableStructure();
+	$this->destroyTempTable();
+
+	return $structure;
     }
 
     private function createTempTableFromQuery($query)
     {
 	try {
 	    $this->pdoHandle->exec('CREATE TEMPORARY TABLE temp AS (' . $query . ') LIMIT 0; DESCRIBE temp;');
-	} catch (\PDOException $e) {
+	} catch (PDOException $e) {
 	    print_r($e->getMessage());
 	}
     }
@@ -106,7 +104,16 @@ abstract class ADatabaseHandle implements IHandle
 		$structure[$row['Field']] = $row['Type'];
 	    }
 	    return $structure;
-	} catch (\PDOException $e) {
+	} catch (PDOException $e) {
+	    print_r($e->getMessage());
+	}
+    }
+
+    private function destroyTempTable()
+    {
+	try {
+	    $this->pdoHandle->exec('DROP TEMPORARY TABLE IF EXISTS temp;');
+	} catch (PDOException $e) {
 	    print_r($e->getMessage());
 	}
     }
@@ -126,5 +133,7 @@ abstract class ADatabaseHandle implements IHandle
     abstract public function translateTypes(array $structure);
 
     abstract public function typeMap($type);
+
+    abstract public function getInsertStatement();
 
 }

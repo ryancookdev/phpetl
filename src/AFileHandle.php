@@ -1,6 +1,6 @@
 <?php
 
-namespace PhpEtl;
+require_once 'IHandle';
 
 abstract class AFileHandle implements IHandle
 {

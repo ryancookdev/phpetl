@@ -1,7 +1,5 @@
 <?php
 
-namespace PhpEtl;
-
 /**
  * Description of SqliteHandle
  *
@@ -43,7 +41,12 @@ class SqliteHandle extends ADatabaseHandle
     protected function close()
     {
 	parent::close();
-	\unlink(STAGE_PATH . '/local.db');
+	unlink(STAGE_PATH . '/local.db');
+    }
+
+    public function getInsertStatement()
+    {
+
     }
 
 }

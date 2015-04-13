@@ -1,6 +1,6 @@
 <?php
 
-namespace PhpEtl;
+require_once 'ADatabaseHandle.php';
 
 /**
  * Description of MysqlHandle
@@ -59,7 +59,7 @@ class MysqlHandle extends ADatabaseHandle
 	foreach ($structure as $name => $type) {
 	    $nameType[] = "$name $type";
 	}
-	return \implode(',', $nameType);
+	return implode(',', $nameType);
     }
 
     private function createTable($nameTypeStr)
@@ -69,6 +69,26 @@ class MysqlHandle extends ADatabaseHandle
 	} catch (PDOException $e) {
 	    print_r($e->getMessage());
 	}
+    }
+
+    public function getInsertStatement()
+    {
+	$tableHeaderArray = explode(',', $this->tableHeader);
+	$fieldCount = count($tableHeaderArray);
+	$placeholder = implode(',', array_fill(0, $fieldCount, '?'));
+	$insertStatement = 'INSERT INTO ' . $this->tableName
+		. ' (' . $this->tableHeader . ') '
+		. 'VALUES (' . $placeholder . ') '
+		. 'ON DUPLICATE KEY UPDATE ';
+
+	$updateDuplicates = [];
+	foreach ($tableHeaderArray as $field) {
+	    $updateDuplicates[] = "$field=VALUES($field)";
+	}
+
+	$insertStatement .= implode(',', $updateDuplicates) . ';';
+
+	return $insertStatement;
     }
 
 }

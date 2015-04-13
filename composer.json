@@ -11,10 +11,5 @@
         "ext-xdebug": "* 2.2.3",
         "phpunit/phpunit": "dev-master",
         "phpunit/phpunit-skeleton-generator": "dev-master"
-    },
-    "autoload": {
-        "psr-4": {
-            "PhpEtl\\": "src/"
-        }
     }
 }

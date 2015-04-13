@@ -1,6 +1,6 @@
 <?php
 
-namespace PhpEtl;
+require_once 'View.php';
 
 /**
  * Description of IHandle
@@ -10,7 +10,7 @@ namespace PhpEtl;
 interface IHandle
 {
 
-    public function send(IHandle $destinationConnection, array $table);
+    public function send(IHandle $destinationConnection, View $view);
 
     public function load(array $rows);
 

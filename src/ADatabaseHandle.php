@@ -73,6 +73,11 @@ abstract class ADatabaseHandle implements IHandle
 	}
     }
 
+    public function tempTable(View $view)
+    {
+	$this->createTempTableFromQuery($view->name, $view->query);
+    }
+
     public function setPDOAttributes()
     {
 	$this->pdoHandle->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -80,17 +85,23 @@ abstract class ADatabaseHandle implements IHandle
 
     private function getTableStructureFromQuery($query)
     {
-	$this->createTempTableFromQuery($query);
+	$this->createTempTableFromQuery('temp', $query, $empty = TRUE);
 	$structure = $this->readTempTableStructure();
 	$this->destroyTempTable();
 
 	return $structure;
     }
 
-    private function createTempTableFromQuery($query)
+    private function createTempTableFromQuery($name, $query, $empty = FALSE)
     {
+	$create = "CREATE TEMPORARY TABLE $name AS ($query)";
+	if ($empty) {
+	    $create .= ' LIMIT 0';
+	}
+	$create .= ';';
+
 	try {
-	    $this->pdoHandle->exec('CREATE TEMPORARY TABLE temp AS (' . $query . ') LIMIT 0; DESCRIBE temp;');
+	    $this->pdoHandle->exec($create);
 	} catch (PDOException $e) {
 	    print_r($e->getMessage());
 	}

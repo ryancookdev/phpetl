@@ -1,30 +1,24 @@
 <?php
 
 // Basic example
-include '../vendor/autoload.php';
 
-use PhpEtl\Handle\Database;
+include '../src/MysqlHandle.php';
 
-define('STAGE_PATH', __DIR__ . '/../..');
-
-$source = new Database\MysqlHandle([
+$source = new MysqlHandle([
     'type' => 'Mysql',
     'host' => 'myhost',
     'user' => 'myuser',
     'password' => 'mypass',
-    'database' => 'mydb',
-    'table' => 'mytable',
-    'fields' => 'field1, field2, field3'
+    'database' => 'mydb'
 	]);
 
-$destination = new Database\MysqlHandle([
+$destination = new MysqlHandle([
     'type' => 'Mysql',
     'host' => 'myhost',
     'user' => 'myuser',
     'password' => 'mypass',
-    'database' => 'mydb',
-    'table' => 'mytable',
-    'fields' => 'field1, field2, field3'
+    'database' => 'mydb'
 	]);
 
-$source->extract($destination);
+$source->send($destination, new View('newtable', 'SELECT * FROM mytable'));
+

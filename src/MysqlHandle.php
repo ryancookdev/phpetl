@@ -39,9 +39,8 @@ class MysqlHandle extends ADatabaseHandle
 	return $type;
     }
 
-    public function defineTable($name, array $structure)
+    public function defineTable(array $structure)
     {
-	$this->tableName = $name;
 	$this->setTableHeader(array_keys($structure));
 	$translatedStructure = $this->translateTypes($structure);
 	$nameTypeStr = $this->structureToString($translatedStructure);

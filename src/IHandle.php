@@ -1,7 +1,5 @@
 <?php
 
-require_once 'View.php';
-
 /**
  * Description of IHandle
  *
@@ -10,7 +8,7 @@ require_once 'View.php';
 interface IHandle
 {
 
-    public function send(IHandle $destinationConnection, View $view);
+    public function send(IHandle $destinationConnection, $query);
 
     public function load(array $rows);
 
@@ -18,6 +16,6 @@ interface IHandle
 
     public function commitTransaction();
 
-    public function defineTable($name, array $structure);
+    public function defineTable(array $structure);
 
 }

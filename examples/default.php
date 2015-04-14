@@ -20,5 +20,6 @@ $destination = new MysqlHandle([
     'database' => 'mydb'
 	]);
 
-$source->send($destination, new View('newtable', 'SELECT * FROM mytable'));
+$destination->setTable('newtable');
+$source->send($destination, 'SELECT * FROM mytable');
 

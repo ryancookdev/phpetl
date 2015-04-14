@@ -1,7 +1,6 @@
 <?php
 
 require_once 'IHandle.php';
-require_once 'View.php';
 
 abstract class ADatabaseHandle implements IHandle
 {
@@ -27,16 +26,16 @@ abstract class ADatabaseHandle implements IHandle
 	}
     }
 
-    public function send(IHandle $destination, View $view)
+    public function send(IHandle $destination, $query)
     {
 	$rows = [];
 	$i = 0;
 
 	try {
-	    $stmt = $this->pdoHandle->prepare($view->query);
+	    $stmt = $this->pdoHandle->prepare($query);
 	    $stmt->execute();
 
-	    $destination->defineTable($view->name, $this->getTableStructureFromQuery($view->query));
+	    $destination->defineTable($this->getTableStructureFromQuery($query));
 
 	    $destination->beginTransaction();
 
@@ -73,9 +72,14 @@ abstract class ADatabaseHandle implements IHandle
 	}
     }
 
-    public function tempTable(View $view)
+    public function setTable($name)
     {
-	$this->createTempTableFromQuery($view->name, $view->query);
+	$this->tableName = $name;
+    }
+
+    public function tempTable($name, $query)
+    {
+	$this->createTempTableFromQuery($name, $query);
     }
 
     public function setPDOAttributes()
